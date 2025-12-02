@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Study Room Reservation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #f9fafb;
+            padding: 0 0 24px 0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(15,23,42,0.15);
+            width: 560px;
+            max-width: 95vw;
+            overflow: hidden;
+        }
+
+        /* Header ribbon */
+        .header {
+            background: linear-gradient(135deg, #1f2937, #2563eb);
+            padding: 16px 24px;
+            color: #f9fafb;
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .content {
+            padding: 20px 24px 4px 24px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .step-indicator div {
+            flex: 1;
+            text-align: center;
+            padding: 6px 4px;
+            border-bottom: 2px solid #d1d5db;
+            color: #6b7280;
+        }
+
+        .step-indicator .active {
+            font-weight: 600;
+            color: #111827;
+            border-bottom-color: #2563eb;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        h3 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #111827;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px 10px;
+            margin-top: 4px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: #ffffff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px #2563eb22;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row > div {
+            flex: 1;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .message.error {
+            color: #b91c1c;
+        }
+
+        .message.success {
+            color: #047857;
+        }
+
+        .summary-box {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 12px;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .summary-section {
+            margin-bottom: 8px;
+        }
+
+        .summary-section-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .room-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            min-height: 52px;
+        }
+
+        .room-box {
+            flex: 0 0 calc(25% - 8px);
+            box-sizing: border-box;
+            border-radius: 9px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.12s ease-out;
+        }
+
+        .room-box:hover {
+            border-color: #2563eb;
+            box-shadow: 0 1px 4px rgba(37,99,235,0.25);
+        }
+
+        .room-box.selected {
+            border-color: #2563eb;
+            background: #dbeafe;
+            font-weight: 600;
+        }
+
+        .room-box span {
+            display: block;
+        }
+
+        .room-box small {
+            display: block;
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 1px;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 class="header-title">Library Study Room Reservation</h1>
+        <p class="header-subtitle"</p>
+    </div>
+
+    <div class="content">
+        <div class="step-indicator">
+            <div id="indicator-1" class="active">1. Student</div>
+            <div id="indicator-2">2. Date &amp; Time</div>
+            <div id="indicator-3">3. Room &amp; Equipment</div>
+            <div id="indicator-4">4. Review</div>
+        </div>
+
+        <!-- STEP 1: Student Info -->
+        <div class="step active" id="step-1">
+            <label for="studentId">Student ID</label>
+            <input type="number" id="studentId" placeholder="e.g. 100123">
+
+            <div class="row">
+                <div>
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" placeholder="First name">
+                </div>
+                <div>
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" placeholder="Last name">
+                </div>
+            </div>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="student@university.edu">
+
+            <div class="buttons">
+                <span></span>
+                <button class="btn-primary" id="next-1">Next &raquo;</button>
+            </div>
+
+            <div class="message error" id="msg-1"></div>
+        </div>
+
+        <!-- STEP 2: Date & Time -->
+        <div class="step" id="step-2">
+            <label for="date">Reservation Date</label>
+            <input type="date" id="date">
+
+            <div class="row">
+                <div>
+                    <label for="startTime">Start Time</label>
+                    <input type="time" id="startTime">
+                </div>
+                <div>
+                    <label for="endTime">End Time</label>
+                    <input type="time" id="endTime">
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn-secondary" id="back-2">&laquo; Back</button>
+                <button class="btn-primary" id="next-2">Next &raquo;</button>
+            </div>
+
+            <div class="message error" id="msg-2"></div>
+        </div>
+
+        <!-- STEP 3: Floor, Size, Room & Equipment -->
+        <div class="step" id="step-3">
+            <label for="floorSelect">Floor</label>
+            <select id="floorSelect">
+                <option value="">-- Select Floor --</option>
+                <option value="1">1st Floor</option>
+                <option value="2">2nd Floor</option>
+                <option value="3">3rd Floor</option>
+            </select>
+
+            <label for="sizeSelect">Room Size</label>
+            <select id="sizeSelect">
+                <option value="">-- Select Size --</option>
+                <option value="Small">Small</option>
+                <option value="Medium">Medium</option>
+                <option value="Large">Large</option>
+            </select>
+            <div class="hint">Only rooms that match the selected floor and size and are available are shown below.</div>
+
+            <label>Available Rooms</label>
+            <div id="roomGrid" class="room-grid">
+                <!-- Filled by JS -->
+            </div>
+
+            <label for="equipment">Equipment</label>
+            <select id="equipment">
+                <option value="">-- Select Equipment (optional) --</option>
+                <option value="1">Projector (Good)</option>
+                <option value="2">Whiteboard Kit (Good)</option>
+                <option value="3">Conference Mic (Fair)</option>
+            </select>
+
+            <div class="buttons">
+                <button class="btn-secondary" id="back-3">&laquo; Back</button>
+                <button class="btn-primary" id="next-3">Next &raquo;</button>
+            </div>
+
+            <div class="message error" id="msg-3"></div>
+        </div>
+
+        <!-- STEP 4: Review & Submit -->
+        <div class="step" id="step-4">
+            <h3>Review Reservation</h3>
+
+            <div class="summary-box" id="summaryBox"></div>
+
+            <div class="buttons">
+                <button class="btn-secondary" id="back-4">&laquo; Back</button>
+                <button class="btn-primary" id="submitBtn">Submit Reservation</button>
+            </div>
+
+            <div class="message" id="msg-4"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- DATA ----------
+
+    // Rooms: 3 floors, 8–15 rooms each. Some unavailable = not shown in UI.
+    const roomsData = [
+        // Floor 1 (8 rooms: 101–108)
+        { id: "101", floor: 1, size: "Small",  available: true },
+        { id: "102", floor: 1, size: "Small",  available: true },
+        { id: "103", floor: 1, size: "Small",  available: false }, // unavailable
+        { id: "104", floor: 1, size: "Medium", available: true },
+        { id: "105", floor: 1, size: "Medium", available: true },
+        { id: "106", floor: 1, size: "Medium", available: false }, // unavailable
+        { id: "107", floor: 1, size: "Large",  available: true },
+        { id: "108", floor: 1, size: "Large",  available: true },
+
+        // Floor 2 (12 rooms: 201–212)
+        { id: "201", floor: 2, size: "Small",  available: true },
+        { id: "202", floor: 2, size: "Small",  available: true },
+        { id: "203", floor: 2, size: "Small",  available: true },
+        { id: "204", floor: 2, size: "Small",  available: false }, // unavailable
+        { id: "205", floor: 2, size: "Medium", available: true },
+        { id: "206", floor: 2, size: "Medium", available: true },
+        { id: "207", floor: 2, size: "Medium", available: true },
+        { id: "208", floor: 2, size: "Medium", available: false }, // unavailable
+        { id: "209", floor: 2, size: "Large",  available: true },
+        { id: "210", floor: 2, size: "Large",  available: true },
+        { id: "211", floor: 2, size: "Large",  available: true },
+        { id: "212", floor: 2, size: "Large",  available: false }, // unavailable
+
+        // Floor 3 (15 rooms: 301–315)
+        { id: "301", floor: 3, size: "Small",  available: true },
+        { id: "302", floor: 3, size: "Small",  available: false }, // unavailable
+        { id: "303", floor: 3, size: "Small",  available: true },
+        { id: "304", floor: 3, size: "Small",  available: true },
+        { id: "305", floor: 3, size: "Small",  available: true },
+        { id: "306", floor: 3, size: "Medium", available: true },
+        { id: "307", floor: 3, size: "Medium", available: false }, // unavailable
+        { id: "308", floor: 3, size: "Medium", available: true },
+        { id: "309", floor: 3, size: "Medium", available: true },
+        { id: "310", floor: 3, size: "Medium", available: true },
+        { id: "311", floor: 3, size: "Large",  available: true },
+        { id: "312", floor: 3, size: "Large",  available: true },
+        { id: "313", floor: 3, size: "Large",  available: false }, // unavailable
+        { id: "314", floor: 3, size: "Large",  available: true },
+        { id: "315", floor: 3, size: "Large",  available: true }
+    ];
+
+    // Fake existing reservation to demonstrate "no double booking"
+    const existingReservations = [
+        {
+            roomId: "205",
+            date: "2025-12-02",
+            start: "10:00",
+            end: "12:00"
+        }
+    ];
+
+    // ---------- STATE & ELEMENTS ----------
+
+    const steps = [
+        document.getElementById("step-1"),
+        document.getElementById("step-2"),
+        document.getElementById("step-3"),
+        document.getElementById("step-4")
+    ];
+
+    const indicators = [
+        document.getElementById("indicator-1"),
+        document.getElementById("indicator-2"),
+        document.getElementById("indicator-3"),
+        document.getElementById("indicator-4")
+    ];
+
+    const floorSelect = document.getElementById("floorSelect");
+    const sizeSelect = document.getElementById("sizeSelect");
+    const roomGrid = document.getElementById("roomGrid");
+
+    let selectedRoomId = null;
+
+    function showStep(index) {
+        steps.forEach((step, i) => {
+            step.classList.toggle("active", i === index);
+            indicators[i].classList.toggle("active", i === index);
+        });
+    }
+
+    // ---------- VALIDATION ----------
+
+    function validateStep1() {
+        const studentId = document.getElementById("studentId").value.trim();
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const msg = document.getElementById("msg-1");
+
+        if (!studentId || !firstName || !lastName || !email) {
+            msg.textContent = "Please fill out all student fields.";
+            return false;
+        }
+        msg.textContent = "";
+        return true;
+    }
+
+    function validateStep2() {
+        const date = document.getElementById("date").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+        const msg = document.getElementById("msg-2");
+
+        if (!date || !startTime || !endTime) {
+            msg.textContent = "Please choose a date and start/end time.";
+            return false;
+        }
+        if (startTime >= endTime) {
+            msg.textContent = "End time must be after start time.";
+            return false;
+        }
+        msg.textContent = "";
+        return true;
+    }
+
+    function validateStep3() {
+        const floor = floorSelect.value;
+        const size = sizeSelect.value;
+        const msg = document.getElementById("msg-3");
+
+        if (!floor || !size) {
+            msg.textContent = "Select a floor and room size.";
+            return false;
+        }
+        if (!selectedRoomId) {
+            msg.textContent = "Please select a room from the available options.";
+            return false;
+        }
+        msg.textContent = "";
+        return true;
+    }
+
+    // ---------- ROOM GRID RENDERING ----------
+
+    function renderRoomGrid() {
+        roomGrid.innerHTML = "";
+        selectedRoomId = null;
+
+        const floor = parseInt(floorSelect.value, 10);
+        const size = sizeSelect.value;
+
+        if (!floor || !size) {
+            return;
+        }
+
+        const filtered = roomsData.filter(r =>
+            r.floor === floor && r.size === size && r.available
+        );
+
+        filtered.forEach(room => {
+            const box = document.createElement("div");
+            box.className = "room-box";
+            box.dataset.roomId = room.id;
+
+            const label = document.createElement("span");
+            label.textContent = room.id;
+
+            const meta = document.createElement("small");
+            meta.textContent = `Floor ${room.floor} • ${room.size}`;
+
+            box.appendChild(label);
+            box.appendChild(meta);
+
+            box.addEventListener("click", () => {
+                document
+                    .querySelectorAll(".room-box")
+                    .forEach(b => b.classList.remove("selected"));
+                box.classList.add("selected");
+                selectedRoomId = room.id;
+            });
+
+            roomGrid.appendChild(box);
+        });
+
+        if (filtered.length === 0) {
+            const msg = document.createElement("div");
+            msg.className = "hint";
+            msg.textContent = "No rooms available with that floor/size combination.";
+            roomGrid.appendChild(msg);
+        }
+    }
+
+    floorSelect.addEventListener("change", renderRoomGrid);
+    sizeSelect.addEventListener("change", renderRoomGrid);
+
+    // ---------- NAVIGATION ----------
+
+    document.getElementById("next-1").onclick = () => {
+        if (validateStep1()) showStep(1);
+    };
+
+    document.getElementById("back-2").onclick = () => showStep(0);
+
+    document.getElementById("next-2").onclick = () => {
+        if (validateStep2()) showStep(2);
+    };
+
+    document.getElementById("back-3").onclick = () => showStep(1);
+
+    document.getElementById("next-3").onclick = () => {
+        if (validateStep3()) {
+            updateSummary();
+            showStep(3);
+        }
+    };
+
+    document.getElementById("back-4").onclick = () => showStep(2);
+
+    // ---------- SUMMARY & SUBMIT ----------
+
+    function updateSummary() {
+        const summaryBox = document.getElementById("summaryBox");
+
+        const studentId = document.getElementById("studentId").value.trim();
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        const date = document.getElementById("date").value || "(no date selected)";
+        const startTime = document.getElementById("startTime").value || "(none)";
+        const endTime = document.getElementById("endTime").value || "(none)";
+
+        const floor = floorSelect.value || "?";
+        const size = sizeSelect.value || "?";
+        const roomId = selectedRoomId || "(none)";
+
+        const equipmentSelect = document.getElementById("equipment");
+        const equipmentText = equipmentSelect.value
+            ? equipmentSelect.options[equipmentSelect.selectedIndex].text
+            : "None";
+
+        summaryBox.innerHTML = `
+            <div class="summary-section">
+                <div class="summary-section-title">Student</div>
+                ${firstName} ${lastName} (ID: ${studentId})<br>
+                ${email}
+            </div>
+            <div class="summary-section">
+                <div class="summary-section-title">Reservation</div>
+                Date: ${date}<br>
+                Time: ${startTime} - ${endTime}
+            </div>
+            <div class="summary-section">
+                <div class="summary-section-title">Room &amp; Equipment</div>
+                Room: ${roomId} (Floor ${floor}, ${size})<br>
+                Equipment: ${equipmentText}
+            </div>
+        `;
+    }
+
+    document.getElementById("submitBtn").onclick = () => {
+        const msg = document.getElementById("msg-4");
+
+        // Re-validate key pieces in case user went back
+        if (!validateStep3()) {
+            showStep(2);
+            return;
+        }
+        if (!validateStep2()) {
+            showStep(1);
+            return;
+        }
+
+        const date = document.getElementById("date").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+
+        const conflict = existingReservations.some(r =>
+            r.roomId === selectedRoomId &&
+            r.date === date &&
+            !(endTime <= r.start || startTime >= r.end)
+        );
+
+        if (conflict) {
+            msg.textContent =
+                "Conflict detected: this room is already reserved at that time. (Demo only)";
+            msg.className = "message error";
+            return;
+        }
+
+        updateSummary();
+        msg.textContent =
+            "Reservation Submitted! (demo only).";
+        msg.className = "message success";
+    };
+</script>
+</body>
+</html>
